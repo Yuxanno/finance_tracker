@@ -1,0 +1,20 @@
+{
+  "name": "finance-tracker-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "clear-db": "node scripts/clearDatabase.js"
+  },
+  "dependencies": {
+    "fastify": "^4.26.0",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/jwt": "^8.0.0",
+    "socket.io": "^4.7.4",
+    "mongodb": "^6.3.0",
+    "bcrypt": "^5.1.1",
+    "zod": "^3.22.4",
+    "dotenv": "^16.4.1"
+  }
+}
