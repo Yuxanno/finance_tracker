@@ -30,8 +30,23 @@ fastify.addHook('onResponse', (request, reply, done) => {
 async function start() {
   try {
     // Register plugins
+    // Разрешаем: localhost (dev), любой origin в prod (для мобильного приложения)
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'capacitor://localhost',   // Capacitor Android
+      'ionic://localhost',       // Ionic
+      'http://localhost',        // Android WebView
+    ];
+
     await fastify.register(cors, {
-      origin: config.nodeEnv === 'development' ? 'http://localhost:5173' : true,
+      origin: (origin, cb) => {
+        // В production разрешаем всё (мобильное приложение не имеет Origin)
+        if (config.nodeEnv === 'production' || !origin || allowedOrigins.includes(origin)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Not allowed by CORS'), false);
+        }
+      },
       credentials: true
     });
 
@@ -42,7 +57,7 @@ async function start() {
     // Setup Socket.io
     const io = new Server(fastify.server, {
       cors: {
-        origin: config.nodeEnv === 'development' ? 'http://localhost:5173' : true,
+        origin: '*',  // Для мобильного приложения
         credentials: true
       }
     });
