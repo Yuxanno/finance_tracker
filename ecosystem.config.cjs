@@ -1,4 +1,4 @@
-// PM2 конфиг для production деплоя
+// PM2 конфиг для production деплоя 
 // Запуск: pm2 start ecosystem.config.cjs
 module.exports = {
     apps: [
