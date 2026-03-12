@@ -66,6 +66,7 @@ export class AuthService {
       language: data.language || 'en',
       currency: data.currency || 'USD',
       theme: 'dark',
+      role: data.role || 'user',
       createdAt: new Date()
     };
 
@@ -166,5 +167,35 @@ export class AuthService {
       await this.db.collection('categories').insertMany(toInsert);
     }
     return toInsert.length;
+  }
+
+  async ensureAdmin(login, password) {
+    const existing = await this.db.collection('users').findOne({ login });
+    if (existing) {
+      if (existing.role !== 'admin') {
+        await this.db.collection('users').updateOne(
+          { _id: existing._id },
+          { $set: { role: 'admin' } }
+        );
+        console.log(`👤 User ${login} promoted to admin`);
+      }
+      return existing;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const admin = {
+      username: 'Administrator',
+      login,
+      password: hashedPassword,
+      language: 'ru',
+      currency: 'UZS',
+      theme: 'dark',
+      role: 'admin',
+      createdAt: new Date()
+    };
+
+    const result = await this.db.collection('users').insertOne(admin);
+    console.log(`✅ Admin user ${login} created`);
+    return { ...admin, _id: result.insertedId };
   }
 }

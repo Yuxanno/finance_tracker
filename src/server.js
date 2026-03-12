@@ -10,6 +10,7 @@ import { accountsRoutes } from './routes/accounts.routes.js';
 import { categoriesRoutes } from './routes/categories.routes.js';
 import { transactionsRoutes } from './routes/transactions.routes.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
+import { adminRoutes } from './routes/admin.routes.js';
 import { setupSocket } from './socket/socket.js';
 
 const fastify = Fastify({
@@ -74,6 +75,7 @@ async function start() {
     await fastify.register(categoriesRoutes, { prefix: '/api/categories' });
     await fastify.register(transactionsRoutes, { prefix: '/api/transactions' });
     await fastify.register(analyticsRoutes, { prefix: '/api/analytics' });
+    await fastify.register(adminRoutes, { prefix: '/api/admin' });
 
     // Health check
     fastify.get('/health', async () => ({ status: 'ok' }));
