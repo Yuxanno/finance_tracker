@@ -47,7 +47,8 @@ export const schemas = {
     username: z.string().min(3).max(30).optional(),
     language: z.enum(['en', 'ru', 'uz']).optional(),
     currency: z.enum(['USD', 'EUR', 'RUB', 'UZS']).optional(),
-    theme: z.enum(['light', 'dark']).optional()
+    theme: z.enum(['light', 'dark']).optional(),
+    role: z.enum(['admin', 'pro', 'user', 'standart']).optional()
   }),
 
   changePassword: z.object({

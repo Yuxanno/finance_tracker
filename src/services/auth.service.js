@@ -110,6 +110,7 @@ export class AuthService {
     if (data.language) update.language = data.language;
     if (data.currency) update.currency = data.currency;
     if (data.theme) update.theme = data.theme;
+    if (data.role) update.role = data.role;
 
     await this.db.collection('users').updateOne(
       { _id: objId },

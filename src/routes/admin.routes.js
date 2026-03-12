@@ -1,6 +1,6 @@
-import { AuthService } from '../services/auth.service.js';
 import { authenticate, authorizeAdmin } from '../middleware/auth.js';
 import { getDatabase } from '../config/database.js';
+import { toObjectId } from '../utils/helpers.js';
 
 export async function adminRoutes(fastify) {
   const authService = new AuthService();
@@ -48,11 +48,13 @@ export async function adminRoutes(fastify) {
       return reply.code(400).send({ error: 'Cannot delete yourself' });
     }
     
-    await db.collection('users').deleteOne({ _id: userId });
+    const objId = toObjectId(userId);
+    
+    await db.collection('users').deleteOne({ _id: objId });
     // Also delete linked data
-    await db.collection('accounts').deleteMany({ userId });
-    await db.collection('transactions').deleteMany({ userId });
-    await db.collection('categories').deleteMany({ userId });
+    await db.collection('accounts').deleteMany({ userId: objId });
+    await db.collection('transactions').deleteMany({ userId: objId });
+    await db.collection('categories').deleteMany({ userId: objId });
     
     return { success: true };
   });
@@ -60,10 +62,27 @@ export async function adminRoutes(fastify) {
   // Promote user to admin
   fastify.post('/users/:id/promote', async (request, reply) => {
     const userId = request.params.id;
+    const objId = toObjectId(userId);
     await db.collection('users').updateOne(
-      { _id: userId },
+      { _id: objId },
       { $set: { role: 'admin' } }
     );
     return { success: true };
+  });
+
+  // Update user profile/role
+  fastify.put('/users/:id', async (request, reply) => {
+    const userId = request.params.id;
+    const objId = toObjectId(userId);
+    const data = request.body;
+    
+    // Using existing authService logic for updates but with admin override
+    await db.collection('users').updateOne(
+      { _id: objId },
+      { $set: data }
+    );
+    
+    const updated = await db.collection('users').findOne({ _id: objId }, { projection: { password: 0 } });
+    return updated;
   });
 }
