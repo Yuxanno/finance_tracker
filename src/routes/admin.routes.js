@@ -3,7 +3,6 @@ import { getDatabase } from '../config/database.js';
 import { toObjectId } from '../utils/helpers.js';
 
 export async function adminRoutes(fastify) {
-  const authService = new AuthService();
   const db = getDatabase();
 
   // Middleware for all admin routes
