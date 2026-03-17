@@ -13,7 +13,8 @@ export async function transactionsRoutes(fastify) {
       endDate: request.query.endDate,
       search: request.query.search,
       categoryId: request.query.categoryId,
-      limit: request.query.limit ? parseInt(request.query.limit) : 100
+      limit: request.query.limit ? parseInt(request.query.limit) : 100,
+      skip: request.query.skip ? parseInt(request.query.skip) : 0
     };
 
     const transactions = await transactionsService.getTransactions(request.user.userId, filters);

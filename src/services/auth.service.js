@@ -67,6 +67,7 @@ export class AuthService {
       currency: data.currency || 'USD',
       theme: 'dark',
       role: data.role || 'user',
+      lastSeen: new Date(),
       createdAt: new Date()
     };
 
@@ -91,7 +92,18 @@ export class AuthService {
       const err = new Error('Invalid credentials'); err.statusCode = 400; throw err;
     }
 
+    // Update last seen on login
+    await this.updateLastSeen(user._id);
+
     return sanitizeUser(user);
+  }
+
+  async updateLastSeen(userId) {
+    const objId = toObjectId(userId.toString());
+    await this.db.collection('users').updateOne(
+      { _id: objId },
+      { $set: { lastSeen: new Date() } }
+    );
   }
 
   async getUserById(userId) {
@@ -110,7 +122,6 @@ export class AuthService {
     if (data.language) update.language = data.language;
     if (data.currency) update.currency = data.currency;
     if (data.theme) update.theme = data.theme;
-    if (data.role) update.role = data.role;
 
     await this.db.collection('users').updateOne(
       { _id: objId },
@@ -196,7 +207,13 @@ export class AuthService {
     };
 
     const result = await this.db.collection('users').insertOne(admin);
-    console.log(`✅ Admin user ${login} created`);
-    return { ...admin, _id: result.insertedId };
+    const userId = result.insertedId;
+
+    // Create default categories in user's language
+    const categories = buildCategories(userId, admin.language);
+    await this.db.collection('categories').insertMany(categories);
+
+    console.log(`✅ Admin user ${login} created with default categories`);
+    return { ...admin, _id: userId };
   }
 }

@@ -35,6 +35,7 @@ export class TransactionsService {
     const transactions = await this.db.collection('transactions')
       .find(query)
       .sort({ date: -1, createdAt: -1 })
+      .skip(filters.skip || 0)
       .limit(filters.limit || 100)
       .toArray();
 

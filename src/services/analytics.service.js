@@ -88,20 +88,18 @@ export class AnalyticsService {
   }
 
   async getDashboardStats(userId, accountId = null) {
+    const userObjId = toObjectId(userId.toString());
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const matchStage = {
-      userId,
-      date: { $gte: today }
-    };
-
+    const baseMatch = { userId: userObjId };
     if (accountId) {
-      matchStage.accountId = toObjectId(accountId);
+      baseMatch.accountId = toObjectId(accountId);
     }
 
+    // Today's stats
     const todayStats = await this.db.collection('transactions').aggregate([
-      { $match: matchStage },
+      { $match: { ...baseMatch, date: { $gte: today } } },
       {
         $group: {
           _id: '$type',
@@ -113,12 +111,10 @@ export class AnalyticsService {
     const income = todayStats.find(s => s._id === 'income')?.total || 0;
     const expense = todayStats.find(s => s._id === 'expense')?.total || 0;
 
-    // Get month stats
+    // Month stats
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthMatch = { ...matchStage, date: { $gte: monthStart } };
-
     const monthStats = await this.db.collection('transactions').aggregate([
-      { $match: monthMatch },
+      { $match: { ...baseMatch, date: { $gte: monthStart } } },
       {
         $group: {
           _id: '$type',
